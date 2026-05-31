@@ -196,10 +196,9 @@
   }
 
   function updateDashboard(data) {
-    // === ここから差し替え ===
     const gmailEl = document.getElementById('gmail-list');
     const gmailData = data.gmail || [];
-    
+
     if (gmailData.length === 0) {
       gmailEl.innerHTML = '<div class="no-mail">未読の新着メールはありません</div>';
     } else if (gmailData[0].from === "エラー" || gmailData[0].from === "システム") {
@@ -207,13 +206,29 @@
       gmailEl.innerHTML = `<div style="color:var(--alert-color); padding:10px;">${gmailData[0].from}: ${gmailData[0].subject}<br><span style="font-size:0.8rem;">${gmailData[0].body || ''}</span></div>`;
     } else {
       // 正常にメールが取得できた場合の3行表示
-      gmailEl.innerHTML = gmailData.map(m => `
-        <div class="mail-item" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color, #2d3748);">
-          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">
-            <span class="mail-from" style="font-weight: bold; color: var(--primary-color);">${m.from}</span>
+      // 1. 差出人ごとにメールをグループ化（カレンダーの人別表示に合わせる）
+      const groupedMail = {};
+      gmailData.forEach(m => {
+        if (!groupedMail[m.from]) groupedMail[m.from] = [];
+        groupedMail[m.from].push(m);
+      });
+
+      // 2. カレンダーのような枠（ブロック）構造でHTMLを組み立て
+      gmailEl.innerHTML = Object.keys(groupedMail).map(sender => `
+        <div class="day-block" style="margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden;">
+          <!-- カレンダーのヘッダー風の枠見出し -->
+          <div class="day-header" style="background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.9rem; color: var(--text-color);">${sender}</div>
+          
+          <div class="mail-content-block" style="padding: 4px 0;">
+            ${groupedMail[sender].map(m => `
+              <div class="mail-entry-item" style="padding: 10px 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem;">
+                <!-- 件名 -->
+                <div style="font-weight: bold; font-size: 0.9rem; margin-bottom: 6px; color: var(--text-color);">${m.subject}</div>
+                <!-- 3行本文要約 -->
+                <div style="color: var(--text-muted); white-space: pre-wrap; line-height: 1.45; padding-left: 8px; border-left: 2px solid var(--primary-color);">${m.body || ''}</div>
+              </div>
+            `).join('')}
           </div>
-          <div class="mail-subject" style="font-weight: 500; font-size: 0.95rem; margin-bottom: 6px;">${m.subject}</div>
-          <div class="mail-body" style="font-size: 0.85rem; color: var(--text-muted); white-space: pre-wrap; line-height: 1.4; padding-left: 8px; border-left: 2px solid var(--border-color);">${m.body || ''}</div>
         </div>
       `).join('');
     }
