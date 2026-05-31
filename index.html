@@ -29,10 +29,22 @@
     }
     .time-display { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); }
     
-    /* 初期状態は非表示、データロード後に grid を適用 */
-    #main-container {
-      display: none;
+    /* ログインフォームの簡易スタイリング */
+    .login-box {
+      max-width: 320px;
+      margin: 60px auto;
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
     }
+    .login-box h2 { font-size: 1.2rem; margin-bottom: 15px; text-align: center; color: var(--primary-color); }
+    .input-group { margin-bottom: 15px; }
+    .input-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+    .input-group input { width: 100%; padding: 8px 12px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); }
+    .login-btn { width: 100%; padding: 10px; background: var(--primary-color); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 5px; }
+    
+    #main-container { display: none; }
     .dashboard-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 20px; align-items: start;
@@ -67,29 +79,14 @@
     .event-item { display: flex; gap: 10px; font-size: 0.85rem; margin-bottom: 3px; }
     .event-time { color: var(--accent-color); font-weight: bold; min-width: 85px; }
     
-    .day-sat { color: #60a5fa !important; } /* 土曜：青 */
-    .day-sun, .day-hol { color: #f87171 !important; } /* 日曜・祝日：赤 */
+    .day-sat { color: #60a5fa !important; }
+    .day-sun, .day-hol { color: #f87171 !important; }
 
-    /* Gmail 要約デザイン */
-    .mail-item { border-bottom: 1px solid var(--border-color); padding: 12px 0; }
-    .mail-item:last-child { border-bottom: none; }
-    .mail-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-    .mail-from { font-weight: bold; color: #cbd5e1; }
-    .mail-subject { font-size: 0.9rem; font-weight: bold; color: #f8fafc; margin-bottom: 6px; }
-    .mail-ai-box { background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px dashed #475569; }
-    .mail-ai-tag { font-size: 0.65rem; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;}
-    .mail-snippet {
-      font-size: 0.9rem; color: var(--text-muted); margin-top: 2px;
-      white-space: pre-wrap;
-      color: #e2e8f0;
-    }
-
-    /* Gmail要約の新しいデザイン */
+    /* Gmail要約のデザイン */
     .gmail-group { margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
     .gmail-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.85rem; color: var(--text-color); }
     .mail-entry { padding: 8px 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem; }
     .mail-entry:first-child { border-top: none; }
-
   </style>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -97,7 +94,6 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <script>
-    // サービスワーカーの登録
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -108,70 +104,62 @@
   </script>
 </head>
 <body>
-<form onsubmit="return false;">
-  
-  <div style="margin-bottom: 10px;">
-    <label for="username">ユーザー名:</label>
-    <input 
-      type="text" 
-      id="username" 
-      name="username" 
-      autocomplete="username" 
-      placeholder="stilemore@gmail.com"
-    >
-  </div>
 
-  <div>
-    <label for="password">パスワード:</label>
-    <input 
-      type="password" 
-      id="password" 
-      name="password" 
-      autocomplete="current-password" 
-      placeholder="Ujdtelmn111@"
-    >
-  </div>
-</form>
-<div id="loading" class="loading" style="font-size: 1.2rem; padding: 40px;">データを読み込み中...</div>
+<div id="login-container" class="login-box">
+  <h2>Dashboard Login</h2>
+  <form onsubmit="loginAndFetch(); return false;">
+    <div class="input-group">
+      <label for="username">ユーザー名:</label>
+      <input type="text" id="username" name="username" autocomplete="username" placeholder="stilemore@gmail.com" required>
+    </div>
+    <div class="input-group">
+      <label for="password">パスワード:</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="login-btn">ログイン</button>
+  </form>
+</div>
 
-<header>
-  <h1>Information Dashboard</h1>
-  <div class="time-display" id="current-time">----/--/-- --:--:--</div>
-</header>
+<div id="loading" class="loading" style="font-size: 1.2rem; padding: 40px; display: none;">データを読み込み中...</div>
 
-<div id="main-container" class="dashboard-grid">
-  <div class="left-column-group">
-    <div class="card">
-      <h2>天気予報 (24h)</h2>
-      <div id="weather-summary" class="weather-summary">--°C / --°C</div>
-      <div class="weather-columns">
-        <div id="weather-left"></div>
-        <div id="weather-right"></div>
+<div id="main-container">
+  <header>
+    <h1>Information Dashboard</h1>
+    <div class="time-display" id="current-time">----/--/-- --:--:--</div>
+  </header>
+
+  <div class="dashboard-grid">
+    <div class="left-column-group">
+      <div class="card">
+        <h2>天気予報 (24h)</h2>
+        <div id="weather-summary" class="weather-summary">--°C / --°C</div>
+        <div class="weather-columns">
+          <div id="weather-left"></div>
+          <div id="weather-right"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>鉄道遅延</h2>
+        <div id="train-list"><div class="loading">読込中...</div></div>
       </div>
     </div>
+
     <div class="card">
-      <h2>鉄道遅延</h2>
-      <div id="train-list"><div class="loading">読込中...</div></div>
+      <h2>カレンダー予定 (7日間)</h2>
+      <div id="calendar-list"><div class="loading">読込中...</div></div>
     </div>
-  </div>
 
-  <div class="card">
-    <h2>カレンダー予定 (7日間)</h2>
-    <div id="calendar-list"><div class="loading">読込中...</div></div>
-  </div>
-
-  <div class="card">
-    <h2>メール要約</h2>
-    <div id="gmail-list"><div class="loading">読込中...</div></div>
+    <div class="card">
+      <h2>メール要約</h2>
+      <div id="gmail-list"><div class="loading">読込中...</div></div>
+    </div>
   </div>
 </div>
 
 <script>
-  // ⚠️ GASのウェブアプリURLをここに正しく貼り付けてください。
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwNMJAHnVt8gz_Esdy5dkbl6jPPalHbf605kxMabyHN__PREXszxxJvczVhLSJf5KWx/exec";
   const LAT = "35.761", LON = "139.705";
 
-  // 時計更新
   function updateClock() {
     const now = new Date();
     document.getElementById('current-time').textContent = now.toLocaleString('ja-JP');
@@ -179,7 +167,6 @@
   setInterval(updateClock, 1000);
   updateClock();
 
-  // 天気予報の取得
   async function fetchWeather() {
     try {
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,precipitation_probability,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`);
@@ -209,7 +196,6 @@
   }
 
   function updateDashboard(data) {
-    // 1. Gmail の描画 (差出人ごとにグループ化)
     const gmailEl = document.getElementById('gmail-list');
     const gmailData = data.gmail || [];
 
@@ -234,7 +220,6 @@
       gmailEl.innerHTML = `<div class="loading">未読の新着メールはありません。</div>`;
     }
 
-    // 曜日・祝日判定ヘルパー
     function getDateClass(dateStr, isHoliday) {
       const date = new Date(dateStr);
       if (isHoliday) return 'day-hol';
@@ -244,7 +229,6 @@
       return '';
     }
 
-    // 2. カレンダーの描画 (DocumentFragmentによる高速化)
     const calEl = document.getElementById('calendar-list');
     const calData = data.calendar || [];
     
@@ -284,7 +268,6 @@
       calEl.appendChild(fragment);
     }
 
-    // 3. 鉄道遅延情報の描画
     const trainEl = document.getElementById('train-list');
     const trainData = data.train || [];
     trainEl.innerHTML = trainData.length ? trainData.map(t => `
@@ -295,32 +278,54 @@
     `).join('') : '<div class="no-delay">遅延情報はありません</div>';
   }
 
-  async function fetchData() {
+  // ⚠️【修正】古い自動実行用の fetchData 関数は完全に削除しました
+
+  // ログイン処理を実行するメイン関数
+  async function loginAndFetch() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    
+    const loginContainer = document.getElementById('login-container');
     const loadingEl = document.getElementById('loading');
     const containerEl = document.getElementById('main-container');
+    
+    if(!user || !pass) {
+      alert("ユーザー名とパスワードを入力してください。");
+      return;
+    }
+    
+    // ログイン画面を隠し、ローディングを表示
+    loginContainer.style.display = 'none';
+    loadingEl.style.display = 'block';
+    loadingEl.textContent = '認証中・データを読み込み中...';
+    containerEl.style.display = 'none';
     
     fetchWeather(); // 天気は並列で取得
     
     try {
-      const response = await fetch(`${GAS_URL}?_ts=${Date.now()}`);
+      const response = await fetch(`${GAS_URL}?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}&_ts=${Date.now()}`);
       if (!response.ok) throw new Error('ネットワークの応答が正常ではありません。');
       
       const data = await response.json();
+      
+      if (data.error === "Unauthorized") {
+        throw new Error('ユーザー名またはパスワードが正しくありません。');
+      }
+      
       updateDashboard(data);
       
-      if (loadingEl) loadingEl.style.display = 'none';
-      if (containerEl) containerEl.style.display = 'grid';
+      // 認証成功時：ローディングを隠し、メインダッシュボードを表示
+      loadingEl.style.display = 'none';
+      containerEl.style.display = 'block'; // grid適用の親要素を表示
       
     } catch (error) {
       console.error('Fetch error:', error);
-      if (loadingEl) {
-        loadingEl.innerHTML = `<div style="color:var(--alert-color); font-weight:bold;">データの読み込みに失敗しました。<br><span style="font-size:0.9rem; font-weight:normal;">${error.message}</span></div>`;
-      }
+      // エラー時はログインフォームを再表示し、エラーメッセージをポップアップ
+      loginContainer.style.display = 'block';
+      loadingEl.style.display = 'none';
+      alert(error.message);
     }
   }
-
-  // 初回実行
-  fetchData();
 </script>
 </body>
 </html>
