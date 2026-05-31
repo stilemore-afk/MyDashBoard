@@ -198,20 +198,17 @@
   function updateDashboard(data) {
     const gmailEl = document.getElementById('gmail-list');
     const gmailData = data.gmail || [];
-
-    if (gmailData.length && !gmailData[0].from.includes("エラー") && !gmailData[0].from.includes("システム")) {
-      const groupedMail = {};
-      gmailData.forEach(m => {
-        if (!groupedMail[m.from]) groupedMail[m.from] = [];
-        groupedMail[m.from].push(m);
-      });
-
-      gmailEl.innerHTML = Object.keys(groupedMail).map(sender => `
-        <div class="gmail-group">
-          <div class="gmail-header">${sender}</div>
-          ${groupedMail[sender].map(m => `
-            <div class="mail-entry">${m.subject}</div>
-          `).join('')}
+    
+    if (gmailData.length === 0) {
+      gmailEl.innerHTML = '<div class="no-mail">未読の新着メールはありません</div>';
+    } else {
+      gmailEl.innerHTML = gmailData.map(m => `
+        <div class="mail-item" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px id var(--border-color, #2d3748);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">
+            <span class="mail-from" style="font-weight: bold; color: var(--primary-color);">${m.from}</span>
+          </div>
+          <div class="mail-subject" style="font-weight: 500; font-size: 0.95rem; margin-bottom: 6px;">${m.subject}</div>
+          <div class="mail-body" style="font-size: 0.85rem; color: var(--text-muted); white-space: pre-wrap; line-height: 1.4; padding-left: 8px; border-left: 2px solid var(--border-color);">${m.body || ''}</div>
         </div>
       `).join('');
     } else if (gmailData.length && (gmailData[0].from === "エラー" || gmailData[0].from === "システム")) {
