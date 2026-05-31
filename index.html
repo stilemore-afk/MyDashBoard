@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Information Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #121214;
+      --card-bg: #1e1e24;
+      --text-color: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border-color: #2d3748;
+      --primary-color: #3b82f6;
+      --alert-color: #ef4444;
+      --accent-color: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      line-height: 1.4;
+    }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
+    }
+    .time-display { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); }
+    
+    /* 初期状態は非表示、データロード後に grid を適用 */
+    #main-container {
+      display: none;
+    }
+    .dashboard-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px; align-items: start;
+    }
+    .left-column-group { display: flex; flex-direction: column; gap: 20px; }
+    .card {
+      background: var(--card-bg); border-radius: 16px; padding: 20px;
+      border: 1px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+    }
+    .card h2 { font-size: 1.1rem; margin-bottom: 15px; color: var(--primary-color); border-left: 4px solid var(--primary-color); padding-left: 10px; }
+    .loading { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; }
+
+    /* 天気 2列表示 */
+    .weather-summary { display: flex; justify-content: space-around; background: #0f172a; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; }
+    .weather-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .weather-item {
+      display: grid; grid-template-columns: 2.8rem 1.5rem 2.5rem 1fr;
+      align-items: center; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px solid #334155;
+    }
+    .pop { color: #60a5fa; text-align: right; font-size: 0.7rem; }
+
+    /* 鉄道情報 */
+    .delay-item { background: #450a0a; border-left: 4px solid var(--alert-color); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; }
+    .delay-line { font-weight: bold; color: #fecaca; }
+    .no-delay { color: var(--accent-color); text-align: center; font-weight: bold; padding: 10px; background: #064e3b; border-radius: 8px; }
+
+    /* カレンダー日別・人別表示 */
+    .day-block { margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
+    .day-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.9rem; }
+    .person-block { padding: 8px 12px; border-top: 1px solid var(--border-color); }
+    .person-name { font-size: 0.75rem; color: var(--primary-color); font-weight: bold; margin-bottom: 4px; display: block; text-decoration: underline; }
+    .event-item { display: flex; gap: 10px; font-size: 0.85rem; margin-bottom: 3px; }
+    .event-time { color: var(--accent-color); font-weight: bold; min-width: 85px; }
+    
+    .day-sat { color: #60a5fa !important; } /* 土曜：青 */
+    .day-sun, .day-hol { color: #f87171 !important; } /* 日曜・祝日：赤 */
+
+    /* Gmail 要約デザイン */
+    .mail-item { border-bottom: 1px solid var(--border-color); padding: 12px 0; }
+    .mail-item:last-child { border-bottom: none; }
+    .mail-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+    .mail-from { font-weight: bold; color: #cbd5e1; }
+    .mail-subject { font-size: 0.9rem; font-weight: bold; color: #f8fafc; margin-bottom: 6px; }
+    .mail-ai-box { background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px dashed #475569; }
+    .mail-ai-tag { font-size: 0.65rem; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;}
+    .mail-snippet {
+      font-size: 0.9rem; color: var(--text-muted); margin-top: 2px;
+      white-space: pre-wrap;
+      color: #e2e8f0;
+    }
+
+    /* Gmail要約の新しいデザイン */
+    .gmail-group { margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
+    .gmail-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.85rem; color: var(--text-color); }
+    .mail-entry { padding: 8px 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem; }
+    .mail-entry:first-child { border-top: none; }
+
+  </style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <script>
+    // サービスワーカーの登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker 登録成功:', reg.scope))
+          .catch(err => console.error('Service Worker 登録失敗:', err));
+      });
+    }
+  </script>
+</head>
+<body>
+<form onsubmit="return false;">
+  
+  <div style="margin-bottom: 10px;">
+    <label for="username">ユーザー名:</label>
+    <input 
+      type="text" 
+      id="username" 
+      name="username" 
+      autocomplete="username" 
+      placeholder="stilemore@gmail.com"
+    >
+  </div>
+
+  <div>
+    <label for="password">パスワード:</label>
+    <input 
+      type="password" 
+      id="password" 
+      name="password" 
+      autocomplete="current-password" 
+      placeholder="Ujdtelmn111@"
+    >
+  </div>
+</form>
+<div id="loading" class="loading" style="font-size: 1.2rem; padding: 40px;">データを読み込み中...</div>
+
+<header>
+  <h1>Information Dashboard</h1>
+  <div class="time-display" id="current-time">----/--/-- --:--:--</div>
+</header>
+
+<div id="main-container" class="dashboard-grid">
+  <div class="left-column-group">
+    <div class="card">
+      <h2>天気予報 (24h)</h2>
+      <div id="weather-summary" class="weather-summary">--°C / --°C</div>
+      <div class="weather-columns">
+        <div id="weather-left"></div>
+        <div id="weather-right"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>鉄道遅延</h2>
+      <div id="train-list"><div class="loading">読込中...</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>カレンダー予定 (7日間)</h2>
+    <div id="calendar-list"><div class="loading">読込中...</div></div>
+  </div>
+
+  <div class="card">
+    <h2>メール要約</h2>
+    <div id="gmail-list"><div class="loading">読込中...</div></div>
+  </div>
+</div>
+
+<script>
+  // ⚠️ GASのウェブアプリURLをここに正しく貼り付けてください。
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwNMJAHnVt8gz_Esdy5dkbl6jPPalHbf605kxMabyHN__PREXszxxJvczVhLSJf5KWx/exec";
+  const LAT = "35.761", LON = "139.705";
+
+  // 時計更新
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('current-time').textContent = now.toLocaleString('ja-JP');
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // 天気予報の取得
+  async function fetchWeather() {
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,precipitation_probability,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`);
+      const data = await res.json();
+      document.getElementById('weather-summary').innerHTML = `<span style="color:#ef4444">${Math.round(data.daily.temperature_2m_max[0])}°C</span> / <span style="color:#38bdf8">${Math.round(data.daily.temperature_2m_min[0])}°C</span>`;
+
+      const hourly = data.hourly;
+      const nowIdx = hourly.time.findIndex(t => new Date(t) >= new Date());
+      const icons = { 0:"☀️", 1:"🌤️", 2:"⛅", 3:"☁️", 45:"🌫️", 61:"🌧️", 80:"🌦️", 95:"⛈️" };
+
+      document.getElementById('weather-left').innerHTML = '';
+      document.getElementById('weather-right').innerHTML = '';
+
+      for(let i=0; i<24; i++) {
+        const idx = (nowIdx === -1 ? 0 : nowIdx) + i;
+        if (!hourly.time[idx]) break;
+        const time = new Date(hourly.time[idx]);
+        const html = `<div class="weather-item">
+          <div>${time.getHours()}:00</div>
+          <div>${icons[hourly.weathercode[idx]] || "☁️"}</div>
+          <div style="font-weight:bold">${Math.round(hourly.temperature_2m[idx])}°</div>
+          <div class="pop">${hourly.precipitation_probability[idx]}%</div>
+        </div>`;
+        document.getElementById(i < 12 ? 'weather-left' : 'weather-right').innerHTML += html;
+      }
+    } catch(e) { console.error('Weather fetch error:', e); }
+  }
+
+  function updateDashboard(data) {
+    // 1. Gmail の描画 (差出人ごとにグループ化)
+    const gmailEl = document.getElementById('gmail-list');
+    const gmailData = data.gmail || [];
+
+    if (gmailData.length && !gmailData[0].from.includes("エラー") && !gmailData[0].from.includes("システム")) {
+      const groupedMail = {};
+      gmailData.forEach(m => {
+        if (!groupedMail[m.from]) groupedMail[m.from] = [];
+        groupedMail[m.from].push(m);
+      });
+
+      gmailEl.innerHTML = Object.keys(groupedMail).map(sender => `
+        <div class="gmail-group">
+          <div class="gmail-header">${sender}</div>
+          ${groupedMail[sender].map(m => `
+            <div class="mail-entry">${m.subject}</div>
+          `).join('')}
+        </div>
+      `).join('');
+    } else if (gmailData.length && (gmailData[0].from === "エラー" || gmailData[0].from === "システム")) {
+      gmailEl.innerHTML = `<div style="color:var(--alert-color); padding:10px;">${gmailData[0].from}: ${gmailData[0].subject}</div>`;
+    } else {
+      gmailEl.innerHTML = `<div class="loading">未読の新着メールはありません。</div>`;
+    }
+
+    // 曜日・祝日判定ヘルパー
+    function getDateClass(dateStr, isHoliday) {
+      const date = new Date(dateStr);
+      if (isHoliday) return 'day-hol';
+      const day = date.getDay();
+      if (day === 0) return 'day-sun';
+      if (day === 6) return 'day-sat';
+      return '';
+    }
+
+    // 2. カレンダーの描画 (DocumentFragmentによる高速化)
+    const calEl = document.getElementById('calendar-list');
+    const calData = data.calendar || [];
+    
+    if (!calData.length) {
+      calEl.innerHTML = `<div class="loading">今後7日間の予定はありません。</div>`;
+    } else {
+      const grouped = {};
+      calData.forEach(ev => {
+        if (!grouped[ev.date]) grouped[ev.date] = { display: ev.dateDisplay, isHoliday: ev.isHoliday, persons: {} };
+        if (!grouped[ev.date].persons[ev.person]) grouped[ev.date].persons[ev.person] = [];
+        grouped[ev.date].persons[ev.person].push(ev);
+      });
+
+      const fragment = document.createDocumentFragment();
+      Object.keys(grouped).sort().forEach(date => {
+        const cssClass = getDateClass(date, grouped[date].isHoliday);
+        const dayBlock = document.createElement('div');
+        dayBlock.className = 'day-block';
+        
+        let html = `<div class="day-header ${cssClass}">${grouped[date].display}</div>`;
+        html += Object.keys(grouped[date].persons).map(person => `
+          <div class="person-block">
+            <span class="person-name">${person}</span>
+            ${grouped[date].persons[person].map(ev => `
+              <div class="event-item">
+                <span class="event-time">${ev.time}</span>
+                <span>${ev.title}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('');
+        
+        dayBlock.innerHTML = html;
+        fragment.appendChild(dayBlock);
+      });
+      calEl.innerHTML = '';
+      calEl.appendChild(fragment);
+    }
+
+    // 3. 鉄道遅延情報の描画
+    const trainEl = document.getElementById('train-list');
+    const trainData = data.train || [];
+    trainEl.innerHTML = trainData.length ? trainData.map(t => `
+      <div class="delay-item">
+        <div class="delay-line">${t.title}</div>
+        <div>${t.desc}</div>
+      </div>
+    `).join('') : '<div class="no-delay">遅延情報はありません</div>';
+  }
+
+  async function fetchData() {
+    const loadingEl = document.getElementById('loading');
+    const containerEl = document.getElementById('main-container');
+    
+    fetchWeather(); // 天気は並列で取得
+    
+    try {
+      const response = await fetch(`${GAS_URL}?_ts=${Date.now()}`);
+      if (!response.ok) throw new Error('ネットワークの応答が正常ではありません。');
+      
+      const data = await response.json();
+      updateDashboard(data);
+      
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (containerEl) containerEl.style.display = 'grid';
+      
+    } catch (error) {
+      console.error('Fetch error:', error);
+      if (loadingEl) {
+        loadingEl.innerHTML = `<div style="color:var(--alert-color); font-weight:bold;">データの読み込みに失敗しました。<br><span style="font-size:0.9rem; font-weight:normal;">${error.message}</span></div>`;
+      }
+    }
+  }
+
+  // 初回実行
+  fetchData();
+</script>
+</body>
+</html>
