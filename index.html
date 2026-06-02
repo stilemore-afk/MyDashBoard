@@ -26,7 +26,7 @@
       color: var(--text-color);
       padding: 10px; /* スマホ向けに全体の余白を狭く */
       line-height: 1.3;
-      font-size: 0.85rem; /* ★全体の文字サイズをスマホ向けに一回り小さく */
+      font-size: 0.85rem; /* 全体の文字サイズをスマホ向けに一回り小さく */
       overflow-x: hidden;
     }
     header {
@@ -57,10 +57,9 @@
     .dashboard-grid {
       display: flex;
       flex-direction: column;
-      gap: 12px; /* カード同士の間隔を少し狭く */
+      gap: 12px; 
       width: 100%;
     }
-    /* スマホ時は単なる縦並びのコンテナとして扱う */
     .left-column-group { 
       display: flex; 
       flex-direction: column; 
@@ -72,7 +71,7 @@
     .card {
       background: var(--card-bg); 
       border-radius: 12px; 
-      padding: 12px; /* ★内部の余白を狭くしてコンテンツ幅を確保 */
+      padding: 12px; 
       border: 1px solid var(--border-color); 
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
       width: 100%;
@@ -81,19 +80,19 @@
     .card h2 { font-size: 0.95rem; margin-bottom: 10px; color: var(--primary-color); border-left: 3px solid var(--primary-color); padding-left: 8px; }
     .loading { text-align: center; color: var(--text-muted); padding: 15px; font-style: italic; }
 
-    /* 天気コンポーネント（スマホ用1列） */
+    /* 天気コンポーネント */
     .weather-summary { display: flex; justify-content: space-around; background: #0f172a; padding: 8px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; font-size: 0.8rem; }
     .weather-columns { display: flex; flex-direction: column; }
     .weather-item {
       display: grid; 
-      grid-template-columns: 2.3rem 1.8rem 2.3rem 1fr; /* 横幅を細かく微調整 */
+      grid-template-columns: 2.5rem 2rem 2.5rem 1fr; 
       align-items: center; 
-      font-size: 0.75rem; /* ★フォントを小さく */
-      padding: 5px 0; 
+      font-size: 0.8rem; 
+      padding: 6px 0; 
       border-bottom: 1px solid #334155;
       width: 100%;
     }
-    .pop { color: #60a5fa; text-align: right; font-size: 0.7rem; }
+    .pop { color: #60a5fa; text-align: right; font-size: 0.75rem; }
 
     /* 鉄道情報 */
     .delay-item { background: #450a0a; border-left: 3px solid var(--alert-color); padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 0.75rem; }
@@ -120,33 +119,28 @@
     /* ==========================================================================
        2. メディアクエリ：PC / Windows 向け（画面幅 992px 以上で3列に切り替え）
        ========================================================================== */
-    /* ==========================================================================
-       2. メディアクエリ：PC / Windows 向け（画面幅 992px 以上で3列に切り替え）
-       ========================================================================== */
     @media (min-width: 992px) {
       body {
         padding: 20px;
-        font-size: 0.9rem;
+        font-size: 0.9rem; /* PC環境に合わせた標準サイズ */
       }
       header { margin-bottom: 20px; padding-bottom: 10px; }
       .time-display { font-size: 1.2rem; }
       
-      /* ★全体を横並びの3列グリッドに指定 */
+      /* 全体を横並びの3列グリッドに指定 */
       .dashboard-grid {
         display: grid;
-        /* 1列目(天気・鉄道): 1fr、2列目(カレンダー): 1.2fr、3列目(メール): 1.2fr */
         grid-template-columns: 1fr 1.2fr 1.2fr; 
         gap: 20px;
         align-items: start;
       }
       
-      /* ★PC時は left-column-group の枠を「ただの縦並びの塊」として機能させ、
-         grid全体の1列目にスッキリ収まるようにします */
+      /* PC時は1列目のインナーコンテナとして縦並びを維持 */
       .left-column-group { 
         display: flex;
         flex-direction: column;
         gap: 20px;
-        grid-column: 1; /* 明示的に1列目に配置 */
+        grid-column: 1;
       }
       
       .card {
@@ -155,12 +149,7 @@
       }
       .card h2 { font-size: 1.1rem; margin-bottom: 15px; border-left-width: 4px; padding-left: 10px; }
       
-      .weather-columns { 
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-      }
-      .weather-item { font-size: 0.8rem; padding: 6px 0; }
+      .weather-item { font-size: 0.85rem; padding: 6px 0; }
       .weather-summary { font-size: 0.9rem; }
       .delay-item { font-size: 0.85rem; }
       .no-delay { font-size: 0.85rem; }
@@ -216,8 +205,7 @@
         <h2>天気予報 (24h)</h2>
         <div id="weather-summary" class="weather-summary">--°C / --°C</div>
         <div class="weather-columns">
-          <div id="weather-left"></div>
-          <div id="weather-right"></div>
+          <div id="weather-left" style="width: 100%;"></div>
         </div>
       </div>
       <div class="card">
@@ -257,22 +245,53 @@
 
       const hourly = data.hourly;
       const nowIdx = hourly.time.findIndex(t => new Date(t) >= new Date());
-      const icons = { 0:"☀️", 1:"🌤️", 2:"⛅", 3:"☁️", 45:"🌫️", 61:"🌧️", 80:"🌦️", 95:"⛈️" };
+      
+      const icons = { 
+        0: "☀️",  // 晴れ
+        1: "🌤️",  // 主に晴れ
+        2: "⛅",  // 晴れ時々曇り
+        3: "☁️",  // 曇り
+        45: "🌫️", // 霧
+        48: "🌫️", // 氷霧
+        61: "🌧️", // 小雨
+        63: "🌧️", // 雨
+        65: "☔",  // 大雨（強い雨）
+        66: "🌨️", // 氷雨（弱）
+        67: "🌨️", // 氷雨（強）
+        71: "❄️",  // 雪（弱）
+        73: "❄️",  // 雪（中）
+        75: "❄️",  // 雪（強）
+        77: "❄️",  // 霙（みぞれ）
+        80: "🌦️", // にわか雨（弱）
+        81: "🌧️", // にわか雨（中）
+        82: "☔",  // 激しいにわか雨
+        85: "❄️",  // にわか雪（弱）
+        86: "❄️",  // にわか雪（強）
+        95: "⛈️",  // 雷雨
+        96: "⛈️",  // 雹（ひょう）を伴う雷雨
+        99: "🌀"   // 激しい暴風雨・台風イメージ
+      };
 
       document.getElementById('weather-left').innerHTML = '';
-      document.getElementById('weather-right').innerHTML = '';
 
+      const baseIdx = nowIdx === -1 ? 0 : nowIdx;
       for(let i=0; i<24; i++) {
-        const idx = (nowIdx === -1 ? 0 : nowIdx) + i;
+        const idx = baseIdx + i;
         if (!hourly.time[idx]) break;
         const time = new Date(hourly.time[idx]);
+        
+        // コードに対応するアイコンがなければ、降水確率が50%以上の時は「☔」、それ以外は「☁️」にする
+        const currentPop = hourly.precipitation_probability[idx];
+        const defaultIcon = currentPop >= 50 ? "☔" : "☁️";
+        const weatherIcon = icons[hourly.weathercode[idx]] || defaultIcon;
+
         const html = `<div class="weather-item">
           <div>${time.getHours()}:00</div>
-          <div>${icons[hourly.weathercode[idx]] || "☁️"}</div>
+          <div>${weatherIcon}</div>
           <div style="font-weight:bold">${Math.round(hourly.temperature_2m[idx])}°</div>
-          <div class="pop">${hourly.precipitation_probability[idx]}%</div>
+          <div class="pop">${currentPop}%</div>
         </div>`;
-        document.getElementById(i < 12 ? 'weather-left' : 'weather-right').innerHTML += html;
+        document.getElementById('weather-left').innerHTML += html;
       }
     } catch(e) { console.error('Weather fetch error:', e); }
   }
@@ -284,29 +303,21 @@
     if (gmailData.length === 0) {
       gmailEl.innerHTML = '<div class="no-mail">未読の新着メールはありません</div>';
     } else if (gmailData[0].from === "エラー" || gmailData[0].from === "システム") {
-      // エラー時の表示
       gmailEl.innerHTML = `<div style="color:var(--alert-color); padding:10px;">${gmailData[0].from}: ${gmailData[0].subject}<br><span style="font-size:0.8rem;">${gmailData[0].body || ''}</span></div>`;
     } else {
-      // 正常にメールが取得できた場合の3行表示
-      // 1. 差出人ごとにメールをグループ化（カレンダーの人別表示に合わせる）
       const groupedMail = {};
       gmailData.forEach(m => {
         if (!groupedMail[m.from]) groupedMail[m.from] = [];
         groupedMail[m.from].push(m);
       });
 
-      // 2. カレンダーのような枠（ブロック）構造でHTMLを組み立て
       gmailEl.innerHTML = Object.keys(groupedMail).map(sender => `
         <div class="day-block" style="margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden;">
-          <!-- カレンダーのヘッダー風の枠見出し -->
           <div class="day-header" style="background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.9rem; color: var(--text-color);">${sender}</div>
-          
           <div class="mail-content-block" style="padding: 4px 0;">
             ${groupedMail[sender].map(m => `
               <div class="mail-entry-item" style="padding: 10px 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem;">
-                <!-- 件名 -->
                 <div style="font-weight: bold; font-size: 0.9rem; margin-bottom: 6px; color: var(--text-color);">${m.subject}</div>
-                <!-- 3行本文要約 -->
                 <div style="color: var(--text-muted); white-space: pre-wrap; line-height: 1.45; padding-left: 8px; border-left: 2px solid var(--primary-color);">${m.body || ''}</div>
               </div>
             `).join('')}
@@ -373,9 +384,6 @@
     `).join('') : '<div class="no-delay">遅延情報はありません</div>';
   }
 
-  // ⚠️【修正】古い自動実行用の fetchData 関数は完全に削除しました
-
-  // ログイン処理を実行するメイン関数
   async function loginAndFetch() {
     const user = document.getElementById('username').value;
     const pass = document.getElementById('password').value;
@@ -389,13 +397,12 @@
       return;
     }
     
-    // ログイン画面を隠し、ローディングを表示
     loginContainer.style.display = 'none';
     loadingEl.style.display = 'block';
     loadingEl.textContent = '認証中・データを読み込み中...';
     containerEl.style.display = 'none';
     
-    fetchWeather(); // 天気は並列で取得
+    fetchWeather(); 
     
     try {
       const response = await fetch(`${GAS_URL}?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}&_ts=${Date.now()}`);
@@ -408,14 +415,11 @@
       }
       
       updateDashboard(data);
-      
-      // 認証成功時：ローディングを隠し、メインダッシュボードを表示
       loadingEl.style.display = 'none';
-      containerEl.style.display = 'block'; // grid適用の親要素を表示
+      containerEl.style.display = 'block'; 
       
     } catch (error) {
       console.error('Fetch error:', error);
-      // エラー時はログインフォームを再表示し、エラーメッセージをポップアップ
       loginContainer.style.display = 'block';
       loadingEl.style.display = 'none';
       alert(error.message);
