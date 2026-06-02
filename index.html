@@ -17,129 +17,153 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
-    /* 基準：モバイルファースト（スマホ向け設定） */
+    /* ==========================================================================
+       1. 基準・基本スタイル（モバイルファースト：デフォルトはスマホ向けに小さく設定）
+       ========================================================================== */
     body {
       font-family: 'Helvetica Neue', Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      padding: 12px; /* スマホ用に余白を少し狭くしてコンテンツ幅を確保 */
-      line-height: 1.4;
-      overflow-x: hidden; /* 万が一の横揺れ・横スクロールを完全に防止 */
+      padding: 10px; /* スマホ向けに全体の余白を狭く */
+      line-height: 1.3;
+      font-size: 0.85rem; /* ★全体の文字サイズをスマホ向けに一回り小さく */
+      overflow-x: hidden;
     }
     header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
+      margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);
     }
-    .time-display { font-size: 1.1rem; font-weight: bold; color: var(--primary-color); }
+    .time-display { font-size: 1rem; font-weight: bold; color: var(--primary-color); }
     
-    /* ログインフォーム */
+    /* ログインフォーム（スマホ対応） */
     .login-box {
-      max-width: 100%; /* スマホ画面からはみ出さないように修正 */
-      width: 320px;
-      margin: 60px auto;
+      max-width: 100%;
+      width: 290px;
+      margin: 40px auto;
       background: var(--card-bg);
-      padding: 25px;
-      border-radius: 16px;
+      padding: 18px;
+      border-radius: 12px;
       border: 1px solid var(--border-color);
     }
-    .login-box h2 { font-size: 1.2rem; margin-bottom: 15px; text-align: center; color: var(--primary-color); }
-    .input-group { margin-bottom: 15px; }
-    .input-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-    .input-group input { width: 100%; padding: 8px 12px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); }
-    .login-btn { width: 100%; padding: 10px; background: var(--primary-color); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 5px; }
+    .login-box h2 { font-size: 1.1rem; margin-bottom: 12px; text-align: center; color: var(--primary-color); }
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+    .input-group input { width: 100%; padding: 6px 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color); font-size: 0.85rem; }
+    .login-btn { width: 100%; padding: 8px; background: var(--primary-color); border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 4px; font-size: 0.85rem; }
     
     #main-container { display: none; }
 
-    /* ==========================================================================
-       1. 共通・基本スタイル（デフォルトはすべてスマホに最適化）
-       ========================================================================== */
+    /* スマホの基本レイアウト：1列に並べる */
     .dashboard-grid {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      width: 100%; /* 親要素の幅を100%に固定 */
+      gap: 12px; /* カード同士の間隔を少し狭く */
+      width: 100%;
     }
+    /* スマホ時は単なる縦並びのコンテナとして扱う */
     .left-column-group { 
       display: flex; 
       flex-direction: column; 
-      gap: 16px; 
+      gap: 12px; 
       width: 100%;
     }
+    
+    /* カードデザイン（スマホ向けにコンパクト化） */
     .card {
       background: var(--card-bg); 
-      border-radius: 16px; 
-      padding: 16px; /* スマホ向けに少しコンパクトに */
+      border-radius: 12px; 
+      padding: 12px; /* ★内部の余白を狭くしてコンテンツ幅を確保 */
       border: 1px solid var(--border-color); 
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
-      width: 100%; /* カードの横幅を画面幅に完全に合わせる */
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+      width: 100%;
       max-width: 100%;
     }
-    .card h2 { font-size: 1.1rem; margin-bottom: 15px; color: var(--primary-color); border-left: 4px solid var(--primary-color); padding-left: 10px; }
-    .loading { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; }
+    .card h2 { font-size: 0.95rem; margin-bottom: 10px; color: var(--primary-color); border-left: 3px solid var(--primary-color); padding-left: 8px; }
+    .loading { text-align: center; color: var(--text-muted); padding: 15px; font-style: italic; }
 
-    /* 天気コンポーネント：スマホでは縦1列に並べる */
-    .weather-summary { display: flex; justify-content: space-around; background: #0f172a; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; }
-    .weather-columns { 
-      display: flex;
-      flex-direction: column; /* スマホでは左右に分けず、上から下へ1列にする */
-      gap: 0; 
-    }
+    /* 天気コンポーネント（スマホ用1列） */
+    .weather-summary { display: flex; justify-content: space-around; background: #0f172a; padding: 8px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; font-size: 0.8rem; }
+    .weather-columns { display: flex; flex-direction: column; }
     .weather-item {
       display: grid; 
-      grid-template-columns: 2.5rem 2rem 2.5rem 1fr; /* スマホの幅に合わせて比率を最適化 */
+      grid-template-columns: 2.3rem 1.8rem 2.3rem 1fr; /* 横幅を細かく微調整 */
       align-items: center; 
-      font-size: 0.85rem; 
-      padding: 6px 0; 
+      font-size: 0.75rem; /* ★フォントを小さく */
+      padding: 5px 0; 
       border-bottom: 1px solid #334155;
       width: 100%;
     }
-    .pop { color: #60a5fa; text-align: right; font-size: 0.75rem; }
+    .pop { color: #60a5fa; text-align: right; font-size: 0.7rem; }
 
     /* 鉄道情報 */
-    .delay-item { background: #450a0a; border-left: 4px solid var(--alert-color); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; }
+    .delay-item { background: #450a0a; border-left: 3px solid var(--alert-color); padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 0.75rem; }
     .delay-line { font-weight: bold; color: #fecaca; }
-    .no-delay { color: var(--accent-color); text-align: center; font-weight: bold; padding: 10px; background: #064e3b; border-radius: 8px; }
+    .no-delay { color: var(--accent-color); text-align: center; font-weight: bold; padding: 8px; background: #064e3b; border-radius: 6px; font-size: 0.8rem; }
 
     /* カレンダー */
-    .day-block { margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; width: 100%; }
-    .day-header { background: #334155; padding: 6px 12px; font-weight: bold; font-size: 0.9rem; }
-    .person-block { padding: 8px 12px; border-top: 1px solid var(--border-color); }
-    .person-name { font-size: 0.75rem; color: var(--primary-color); font-weight: bold; margin-bottom: 4px; display: block; text-decoration: underline; }
-    .event-item { display: flex; gap: 8px; font-size: 0.85rem; margin-bottom: 4px; }
-    .event-time { color: var(--accent-color); font-weight: bold; min-width: 80px; flex-shrink: 0; } /* 時間幅が縮まないように固定 */
+    .day-block { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; width: 100%; }
+    .day-header { background: #334155; padding: 4px 10px; font-weight: bold; font-size: 0.8rem; }
+    .person-block { padding: 6px 10px; border-top: 1px solid var(--border-color); }
+    .person-name { font-size: 0.7rem; color: var(--primary-color); font-weight: bold; margin-bottom: 2px; display: block; text-decoration: underline; }
+    .event-item { display: flex; gap: 6px; font-size: 0.75rem; margin-bottom: 2px; }
+    .event-time { color: var(--accent-color); font-weight: bold; min-width: 75px; flex-shrink: 0; }
     
     .day-sat { color: #60a5fa !important; }
     .day-sun, .day-hol { color: #f87171 !important; }
 
     /* Gmail要約 */
-    .gmail-group { margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
-    .gmail-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.85rem; color: var(--text-color); }
-    .mail-entry { padding: 8px 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem; }
+    .gmail-group { margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+    .gmail-header { background: #334155; padding: 4px 10px; font-weight: bold; font-size: 0.75rem; color: var(--text-color); }
+    .mail-entry { padding: 6px 10px; border-top: 1px solid var(--border-color); font-size: 0.75rem; }
     .mail-entry:first-child { border-top: none; }
 
     /* ==========================================================================
-       2. メディアクエリ（PC・画面が広いデバイス向けの上書き設定）
+       2. メディアクエリ：PC / Windows 向け（画面幅 992px 以上で3列に切り替え）
        ========================================================================== */
-    @media (min-width: 769px) {
+    @media (min-width: 992px) {
       body {
-        padding: 20px; /* PCは広々と余白を取る */
+        padding: 20px;
+        font-size: 0.9rem; /* PCは標準的な文字サイズに戻す */
       }
+      header { margin-bottom: 20px; padding-bottom: 10px; }
       .time-display { font-size: 1.2rem; }
+      
+      /* ★全体を横並びの3列グリッドに指定 */
       .dashboard-grid {
         display: grid;
-        grid-template-columns: 1fr 1.2fr; /* 左右2列構成 */
-        gap: 24px;
+        /* 1列目(天気・鉄道):1fr、2列目(カレンダー):1.2fr、3列目(メール):1.2fr の比率 */
+        grid-template-columns: 1fr 1.2fr 1.2fr; 
+        gap: 20px;
         align-items: start;
       }
+      
+      /* PCでは天気と鉄道を縦に並べるグループとして機能させる */
+      .left-column-group { 
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      
       .card {
-        padding: 20px;
+        padding: 20px; /* PCは余白を広くして見やすく */
+        border-radius: 16px;
       }
-      /* PC環境のときだけ、天気を左右2列に分割して見やすくする */
+      .card h2 { font-size: 1.1rem; margin-bottom: 15px; border-left-width: 4px; padding-left: 10px; }
+      
+      /* PC環境では、1列目の中にある天気予報をスッキリ1列で表示 */
       .weather-columns { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 15px; 
+        display: flex;
+        flex-direction: column;
+        gap: 0;
       }
+      .weather-item { font-size: 0.8rem; padding: 6px 0; }
+      .weather-summary { font-size: 0.9rem; }
+      .delay-item { font-size: 0.85rem; }
+      .no-delay { font-size: 0.85rem; }
+      .day-header { font-size: 0.9rem; }
+      .event-item { font-size: 0.85rem; }
+      .gmail-header { font-size: 0.85rem; }
+      .mail-entry { font-size: 0.85rem; }
     }
   </style>
   <link rel="manifest" href="manifest.json">
