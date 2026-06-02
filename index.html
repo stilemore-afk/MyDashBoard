@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Information Dashboard</title>
-  <style>
+<style>
     :root {
       --bg-color: #121214;
       --card-bg: #1e1e24;
@@ -29,7 +29,7 @@
     }
     .time-display { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); }
     
-    /* ログインフォームの簡易スタイリング */
+    /* ログインフォームのスタイリング */
     .login-box {
       max-width: 320px;
       margin: 60px auto;
@@ -45,19 +45,33 @@
     .login-btn { width: 100%; padding: 10px; background: var(--primary-color); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 5px; }
     
     #main-container { display: none; }
+
+    /* ==========================================================================
+       1. 共通・基本スタイル（スマホ・PC両方で共通して適用するデザイン）
+       ========================================================================== */
+    /* モバイルファースト：基本は縦1列構成 */
     .dashboard-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 20px; align-items: start;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
-    .left-column-group { display: flex; flex-direction: column; gap: 20px; }
+    .left-column-group { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 20px; 
+    }
     .card {
-      background: var(--card-bg); border-radius: 16px; padding: 20px;
-      border: 1px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+      background: var(--card-bg); 
+      border-radius: 16px; 
+      padding: 20px;
+      border: 1px solid var(--border-color); 
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+      width: 100%;
     }
     .card h2 { font-size: 1.1rem; margin-bottom: 15px; color: var(--primary-color); border-left: 4px solid var(--primary-color); padding-left: 10px; }
     .loading { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; }
 
-    /* 天気 2列表示 */
+    /* 天気コンポーネント */
     .weather-summary { display: flex; justify-content: space-around; background: #0f172a; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; }
     .weather-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .weather-item {
@@ -71,7 +85,7 @@
     .delay-line { font-weight: bold; color: #fecaca; }
     .no-delay { color: var(--accent-color); text-align: center; font-weight: bold; padding: 10px; background: #064e3b; border-radius: 8px; }
 
-    /* カレンダー日別・人別表示 */
+    /* カレンダー共通 */
     .day-block { margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
     .day-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.9rem; }
     .person-block { padding: 8px 12px; border-top: 1px solid var(--border-color); }
@@ -82,11 +96,24 @@
     .day-sat { color: #60a5fa !important; }
     .day-sun, .day-hol { color: #f87171 !important; }
 
-    /* Gmail要約のデザイン */
+    /* Gmail要約共通 */
     .gmail-group { margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
     .gmail-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.85rem; color: var(--text-color); }
     .mail-entry { padding: 8px 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem; }
     .mail-entry:first-child { border-top: none; }
+
+    /* ==========================================================================
+       2. メディアクエリ（画面が広いデバイス・PC向けのレイアウト上書き）
+       ========================================================================== */
+    @media (min-width: 769px) {
+      .dashboard-grid {
+        display: grid;
+        /* 左右で 1:1.2 の比率を持つ2列構成 */
+        grid-template-columns: 1fr 1.2fr; 
+        gap: 24px;
+        align-items: start;
+      }
+    }
   </style>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
