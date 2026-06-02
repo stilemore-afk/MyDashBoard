@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Information Dashboard</title>
-<style>
+  <style>
     :root {
       --bg-color: #121214;
       --card-bg: #1e1e24;
@@ -16,22 +16,26 @@
       --accent-color: #10b981;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    /* 基準：モバイルファースト（スマホ向け設定） */
     body {
       font-family: 'Helvetica Neue', Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      padding: 20px;
+      padding: 12px; /* スマホ用に余白を少し狭くしてコンテンツ幅を確保 */
       line-height: 1.4;
+      overflow-x: hidden; /* 万が一の横揺れ・横スクロールを完全に防止 */
     }
     header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
     }
-    .time-display { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); }
+    .time-display { font-size: 1.1rem; font-weight: bold; color: var(--primary-color); }
     
-    /* ログインフォームのスタイリング */
+    /* ログインフォーム */
     .login-box {
-      max-width: 320px;
+      max-width: 100%; /* スマホ画面からはみ出さないように修正 */
+      width: 320px;
       margin: 60px auto;
       background: var(--card-bg);
       padding: 25px;
@@ -47,71 +51,94 @@
     #main-container { display: none; }
 
     /* ==========================================================================
-       1. 共通・基本スタイル（スマホ・PC両方で共通して適用するデザイン）
+       1. 共通・基本スタイル（デフォルトはすべてスマホに最適化）
        ========================================================================== */
-    /* モバイルファースト：基本は縦1列構成 */
     .dashboard-grid {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
+      width: 100%; /* 親要素の幅を100%に固定 */
     }
     .left-column-group { 
       display: flex; 
       flex-direction: column; 
-      gap: 20px; 
+      gap: 16px; 
+      width: 100%;
     }
     .card {
       background: var(--card-bg); 
       border-radius: 16px; 
-      padding: 20px;
+      padding: 16px; /* スマホ向けに少しコンパクトに */
       border: 1px solid var(--border-color); 
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
-      width: 100%;
+      width: 100%; /* カードの横幅を画面幅に完全に合わせる */
+      max-width: 100%;
     }
     .card h2 { font-size: 1.1rem; margin-bottom: 15px; color: var(--primary-color); border-left: 4px solid var(--primary-color); padding-left: 10px; }
     .loading { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; }
 
-    /* 天気コンポーネント */
+    /* 天気コンポーネント：スマホでは縦1列に並べる */
     .weather-summary { display: flex; justify-content: space-around; background: #0f172a; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; }
-    .weather-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .weather-item {
-      display: grid; grid-template-columns: 2.8rem 1.5rem 2.5rem 1fr;
-      align-items: center; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px solid #334155;
+    .weather-columns { 
+      display: flex;
+      flex-direction: column; /* スマホでは左右に分けず、上から下へ1列にする */
+      gap: 0; 
     }
-    .pop { color: #60a5fa; text-align: right; font-size: 0.7rem; }
+    .weather-item {
+      display: grid; 
+      grid-template-columns: 2.5rem 2rem 2.5rem 1fr; /* スマホの幅に合わせて比率を最適化 */
+      align-items: center; 
+      font-size: 0.85rem; 
+      padding: 6px 0; 
+      border-bottom: 1px solid #334155;
+      width: 100%;
+    }
+    .pop { color: #60a5fa; text-align: right; font-size: 0.75rem; }
 
     /* 鉄道情報 */
     .delay-item { background: #450a0a; border-left: 4px solid var(--alert-color); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; }
     .delay-line { font-weight: bold; color: #fecaca; }
     .no-delay { color: var(--accent-color); text-align: center; font-weight: bold; padding: 10px; background: #064e3b; border-radius: 8px; }
 
-    /* カレンダー共通 */
-    .day-block { margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
-    .day-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.9rem; }
+    /* カレンダー */
+    .day-block { margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; width: 100%; }
+    .day-header { background: #334155; padding: 6px 12px; font-weight: bold; font-size: 0.9rem; }
     .person-block { padding: 8px 12px; border-top: 1px solid var(--border-color); }
     .person-name { font-size: 0.75rem; color: var(--primary-color); font-weight: bold; margin-bottom: 4px; display: block; text-decoration: underline; }
-    .event-item { display: flex; gap: 10px; font-size: 0.85rem; margin-bottom: 3px; }
-    .event-time { color: var(--accent-color); font-weight: bold; min-width: 85px; }
+    .event-item { display: flex; gap: 8px; font-size: 0.85rem; margin-bottom: 4px; }
+    .event-time { color: var(--accent-color); font-weight: bold; min-width: 80px; flex-shrink: 0; } /* 時間幅が縮まないように固定 */
     
     .day-sat { color: #60a5fa !important; }
     .day-sun, .day-hol { color: #f87171 !important; }
 
-    /* Gmail要約共通 */
+    /* Gmail要約 */
     .gmail-group { margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
     .gmail-header { background: #334155; padding: 5px 12px; font-weight: bold; font-size: 0.85rem; color: var(--text-color); }
     .mail-entry { padding: 8px 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem; }
     .mail-entry:first-child { border-top: none; }
 
     /* ==========================================================================
-       2. メディアクエリ（画面が広いデバイス・PC向けのレイアウト上書き）
+       2. メディアクエリ（PC・画面が広いデバイス向けの上書き設定）
        ========================================================================== */
     @media (min-width: 769px) {
+      body {
+        padding: 20px; /* PCは広々と余白を取る */
+      }
+      .time-display { font-size: 1.2rem; }
       .dashboard-grid {
         display: grid;
-        /* 左右で 1:1.2 の比率を持つ2列構成 */
-        grid-template-columns: 1fr 1.2fr; 
+        grid-template-columns: 1fr 1.2fr; /* 左右2列構成 */
         gap: 24px;
         align-items: start;
+      }
+      .card {
+        padding: 20px;
+      }
+      /* PC環境のときだけ、天気を左右2列に分割して見やすくする */
+      .weather-columns { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 15px; 
       }
     }
   </style>
