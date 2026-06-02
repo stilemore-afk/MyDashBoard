@@ -120,10 +120,13 @@
     /* ==========================================================================
        2. メディアクエリ：PC / Windows 向け（画面幅 992px 以上で3列に切り替え）
        ========================================================================== */
+    /* ==========================================================================
+       2. メディアクエリ：PC / Windows 向け（画面幅 992px 以上で3列に切り替え）
+       ========================================================================== */
     @media (min-width: 992px) {
       body {
         padding: 20px;
-        font-size: 0.9rem; /* PCは標準的な文字サイズに戻す */
+        font-size: 0.9rem;
       }
       header { margin-bottom: 20px; padding-bottom: 10px; }
       .time-display { font-size: 1.2rem; }
@@ -131,26 +134,27 @@
       /* ★全体を横並びの3列グリッドに指定 */
       .dashboard-grid {
         display: grid;
-        /* 1列目(天気・鉄道):1fr、2列目(カレンダー):1.2fr、3列目(メール):1.2fr の比率 */
+        /* 1列目(天気・鉄道): 1fr、2列目(カレンダー): 1.2fr、3列目(メール): 1.2fr */
         grid-template-columns: 1fr 1.2fr 1.2fr; 
         gap: 20px;
         align-items: start;
       }
       
-      /* PCでは天気と鉄道を縦に並べるグループとして機能させる */
+      /* ★PC時は left-column-group の枠を「ただの縦並びの塊」として機能させ、
+         grid全体の1列目にスッキリ収まるようにします */
       .left-column-group { 
         display: flex;
         flex-direction: column;
         gap: 20px;
+        grid-column: 1; /* 明示的に1列目に配置 */
       }
       
       .card {
-        padding: 20px; /* PCは余白を広くして見やすく */
+        padding: 20px;
         border-radius: 16px;
       }
       .card h2 { font-size: 1.1rem; margin-bottom: 15px; border-left-width: 4px; padding-left: 10px; }
       
-      /* PC環境では、1列目の中にある天気予報をスッキリ1列で表示 */
       .weather-columns { 
         display: flex;
         flex-direction: column;
