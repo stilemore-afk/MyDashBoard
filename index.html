@@ -160,6 +160,7 @@
     }
   </style>
   <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -402,7 +403,9 @@
     loadingEl.textContent = '認証中・データを読み込み中...';
     containerEl.style.display = 'none';
     
-    fetchWeather(); 
+    fetchWeather(
+      const response = await fetch(url, { mode: 'cors' });
+    ); 
     
     try {
       const response = await fetch(`${GAS_URL}?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}&_ts=${Date.now()}`);
