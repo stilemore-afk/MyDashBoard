@@ -398,14 +398,13 @@
       return;
     }
     
+    // === 修正後の正しい状態 ===
     loginContainer.style.display = 'none';
     loadingEl.style.display = 'block';
     loadingEl.textContent = '認証中・データを読み込み中...';
     containerEl.style.display = 'none';
     
-    fetchWeather(
-      const response = await fetch(url, { mode: 'cors' });
-    ); 
+    fetchWeather(); // ←このように、すっきりと1行に戻します
     
     try {
       const response = await fetch(`${GAS_URL}?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}&_ts=${Date.now()}`);
